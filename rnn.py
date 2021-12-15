@@ -1,3 +1,4 @@
+#THIS IS A GROUP PROJECT FOR CS 334. CONTRIBUTORS INCLUDE: ENDER SHMIDT, ABDULLAH HAMID AND TULIO CANO
 import argparse
 import numpy as np
 import pandas as pd
@@ -20,17 +21,19 @@ def main():
     Main file to run from the command line.
     """
     # set up the program to take in arguments from the command line
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("dataSet", help = "Bitcoin dataset inserted in")
-    # args = parser.parse_args()
-    # dataSet = pd.read_csv(args.dataSet)
-    dataSet = pd.read_csv('CutDataSet.csv')
-    dataSet = dataSet.groupby("Timestamp", as_index = False).mean()
-    ySet = dataSet["Weighted_Price"]   #closevalues
+    dataSet = pd.read_csv(bitcoinUSD.csv)
+    dataSet.dropna(subset = ["Open"], inplace = True)
+    dataSet["Timestamp"] = pd.to_datetime(dataSet["Timestamp"], unit = 's').dt.date
+    dataSet = dataSet.groupby("Timestamp", as_index = False).mean() # comment this out for full data set.
+    ySet = dataSet["Close"]
+    ySet2 = dataSet["Open"] # Change prediction feature here
     ySet = np.array(ySet)
-    trainSize = round(len(ySet) * 0.9)
-    yTrain = ySet[:trainSize]
+    ySet2 = np.array(ySet2)
+    tickNum = 50
+    trainSize = round(len(ySet) * 0.75) # Change training size here
+    yTrain = ySet2[:trainSize]
     yTest = ySet[trainSize:]
+    yActualTest = ySet[trainSize:]
     scaler = MinMaxScaler()
     yTrain = yTrain.reshape(-1, 1)
     yTrain = scaler.fit_transform(yTrain)
@@ -42,40 +45,39 @@ def main():
     regressor.add(SimpleRNN(units = 200, activation=function, return_sequences = True, input_shape = (1, 1)))
     #Adds dropouts and extra RNN layers.
     #regressor.add(Dropout(0.2))
-    #regressor.add(SimpleRNN(units = 32, activation=function, return_sequences = True))
+    #regressor.add(SimpleRNN(units = 200, activation=function, return_sequences = True))
     #regressor.add(Dropout(0.2))
-    #regressor.add(SimpleRNN(units = 32, activation=function, return_sequences = True))
+    #regressor.add(SimpleRNN(units = 200, activation=function, return_sequences = True))
     #regressor.add(Dropout(0.2))
     regressor.add(SimpleRNN(units = 200))
     #regressor.add(Dropout(0.2))
     regressor.add(Dense(units = 1))
-    regressor.compile(optimizer = 'adam', loss = 'logcosh')
-    regressor.fit(yTrainOne, yTrainTwo, epochs = 100, batch_size = 200)
+    regressor.compile(optimizer = 'adam', loss = 'mean_squared_error') # Change optimizer and loss here.
+    regressor.fit(yTrainOne, yTrainTwo, epochs = 10, batch_size = 200) # Change epochs and batch size here.
     yTestInput = np.reshape(yTest, (yTest.shape[0], 1))
     yTestInput = scaler.transform(yTestInput)
     yTestPred = regressor.predict(yTestInput)
     yTestPred = scaler.inverse_transform(yTestPred)
-    plt.figure(figsize=(20,8), dpi=78, edgecolor='b')
+    plt.figure(figsize=(18,8), dpi=78, edgecolor='r')
     ax = plt.gca()  
     plt.plot(yTestPred, color = 'blue', label = 'Predicted BTC Price by our Model')
-    plt.plot(yTest, color = 'red', label = 'Actual BTC Price')
-    plt.title('Bitcoin Price Prediction using RNN', fontsize=34)
+    plt.plot(yActualTest, color = 'red', label = 'Actual BTC Price')
+    plt.title('Bitcoin Price Prediction of the Partial Dataset using RNN', fontsize=32)
     x=range(len(ySet) - trainSize)
     labels = np.array(dataSet['Timestamp'])
     labels = labels[trainSize:]
-    plt.xticks(np.arange(x[0], x[len(x) - 1], 50), labels[np.arange(x[0], x[len(x)-1], 50)], rotation = '60')
+    plt.xticks(np.arange(x[0], x[len(x) - 1], tickNum), labels[np.arange(x[0], x[len(x)-1], tickNum)], rotation = '32')
     for tick in ax.xaxis.get_major_ticks():
-        tick.label1.set_fontsize(12)
+        tick.label1.set_fontsize(13)
     for tick in ax.yaxis.get_major_ticks():
-        tick.label1.set_fontsize(12)
-    plt.xlabel('Time', fontsize=24)
-    plt.ylabel('BTC Price', fontsize=24)
-    plt.legend(loc=2, prop={'size': 14})
+        tick.label1.set_fontsize(13)
+    plt.xlabel('Time', fontsize=25)
+    plt.ylabel('BTC Price', fontsize=25)
+    plt.legend(loc=2, prop={'size': 15})
     plt.show()
-    print(explained_variance_score(yTest, yTestPred))
     print(r2_score(yTest, yTestPred))
-    print(mean_squared_error(yTest, yTestPred))
     print(max_error(yTest, yTestPred))
+    print(explained_variance_score(yTest, yTestPred))
     
 
 if __name__ == "__main__":
