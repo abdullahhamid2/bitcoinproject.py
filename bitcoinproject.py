@@ -1,4 +1,4 @@
-#THIS IS A GROUP PROJECT FOR CS 334. CONTRIBUTORS INCLUDE: ENDER SHMIDT, ABDULLAH HAMID AND TULIO CANO
+#THIS IS A GROUP PROJECT FOR CS 334. CONTRIBUTORS INCLUDE: ENDER SCHMIDT, ABDULLAH HAMID AND TULIO CANO
 import argparse
 import numpy as np
 import pandas as pd
@@ -19,6 +19,10 @@ from sklearn.metrics import explained_variance_score
 from sklearn.metrics import mean_squared_error
 from tensorflow.keras.layers import SimpleRNN
 import rnn
+from sklearn.metrics import r2_score
+from sklearn.metrics import max_error
+from sklearn.metrics import explained_variance_score
+from sklearn.metrics import mean_squared_error
 
 def heatmapgraph(data):
     data['Timestamp'] = pd.to_datetime(data['Timestamp'], unit='s')
@@ -40,8 +44,9 @@ def preprocessing(df, timestep):
     yTrain=[]
     df['date'] = pd.to_datetime(df['Timestamp'],unit='s').dt.date
     group = df.groupby('date')
-    #closevalues = group["Close"].mean()
     closevalues = group["Weighted_Price"].mean()
+    # df = df.groupby("Timestamp", as_index = False).mean()
+    # closevalues = df["Weighted_Price"]
     length_close_values = len(closevalues)
     predictiondays = 50
     close_train=closevalues.iloc[:length_close_values-predictiondays]
@@ -88,29 +93,7 @@ def lstm_model(xTrain, yTrain, closevalues, close_test, timestep,scaler):
     predicted_data=scaler.inverse_transform(predicted_data)
     return predicted_data
 
-# def rnn_model(xTrain, yTrain, closevalues, close_test,timestep,scaler):
-    # yTrainOne = closevalues[0:len(yTrain)-1]
-    # yTrainTwo = closevalues[1:len(yTrain)]
-    # yTrainOne = np.reshape(yTrainOne, (yTrainOne.shape[0], yTrainOne.shape[1], 1))
-    # regressor = Sequential()
-    # function = "relu"
-    # regressor.add(SimpleRNN(units=200, activation=function, return_sequences=True, input_shape=(1, 1)))
-    # regressor.add(SimpleRNN(units=200))
-    # regressor.add(Dense(units=1))
-    # regressor.compile(optimizer='adam', loss='logcosh')
-    # regressor.fit(yTrainOne, yTrainTwo, epochs=100, batch_size=200)
-    # #yTestInput = np.reshape(close_test, (close_test.shape[0], 1))
-    # yTestInput = scaler.transform(close_test)
-    # yTestPred = regressor.predict(yTestInput)
-    # yTestPred = scaler.inverse_transform(yTestPred)
-    # return yTestPred
 
-def rnn_model(xTrain, yTrain, closevalues, close_test, timestep, scaler):
-    yTrainOne = closevalues[0:len(yTrain)-1]
-    yTrainTwo = closevalues[1:len(yTrain)]
-    yTrainOne = np.reshape(yTrainOne, (yTrainOne.shape[0]), yTrainOne.shape[1],1)
-    yTrainTwo = np.reshape(y)
-    yTrainone = closevalues[0:l]
 def grapher(predicted_data, close_test):
     data_test=np.array(close_test)
     data_test=data_test.reshape(len(data_test),1)
@@ -136,15 +119,16 @@ def main():
     args = parser.parse_args()
     timestep = int(args.timestep)
     df = pd.read_csv('CutDataSet.csv')
-    heatmapgraph(df)
+    #heatmapgraph(df)
     xTrain, yTrain, close_test, close_train, closevalues = preprocessing(df, timestep)
     close_scaled,scaler = to_scale(close_train)
     predicted_data_lstm = lstm_model(xTrain, yTrain, closevalues, close_test, timestep, scaler)
     grapher(predicted_data_lstm, close_test)
-    print("Running RNN Model now")
-    rnn.main()
-
-
+    print("Explained variance score", explained_variance_score(close_test, predicted_data_lstm))
+    print("R2 score" , r2_score(close_test, predicted_data_lstm))
+    #print("MSE", mean_squared_error(close_test, predicted_data_lstm))
+    print("max error ", max_error(close_test, predicted_data_lstm))
+    #rnn.main()
 
 if __name__ == "__main__":
     main()
