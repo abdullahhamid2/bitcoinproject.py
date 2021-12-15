@@ -21,7 +21,7 @@ def main():
     Main file to run from the command line.
     """
     # set up the program to take in arguments from the command line
-    dataSet = pd.read_csv(bitcoinUSD.csv)
+    dataSet = pd.read_csv("bitcoinUSD.csv")
     dataSet.dropna(subset = ["Open"], inplace = True)
     dataSet["Timestamp"] = pd.to_datetime(dataSet["Timestamp"], unit = 's').dt.date
     dataSet = dataSet.groupby("Timestamp", as_index = False).mean() # comment this out for full data set.
