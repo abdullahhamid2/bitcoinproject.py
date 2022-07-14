@@ -7,4 +7,4 @@ https://emory-my.sharepoint.com/:f:/g/personal/ahamid4_emory_edu/Ein4Yo7Q4lBLpom
 
 The document we reffered to for citations and the overall format of the paper : https://www.bates.edu/biology/files/2010/06/How-to-Write-Guide-v10-2014.pdf 
 
-Paper here: https://docs.google.com/document/d/1HT6A-AvrFQcEW5dYW9ZYSBl7Xf3P4J7rJD2FlOr4a9k/edit?usp=sharing
+See the paper here: https://docs.google.com/document/d/1HT6A-AvrFQcEW5dYW9ZYSBl7Xf3P4J7rJD2FlOr4a9k/edit?usp=sharing
